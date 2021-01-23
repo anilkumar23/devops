@@ -1,0 +1,65 @@
+GitHub CMDs Documentation: 
+
+If you are working with windows make sure u already installed choclatey/choco. By using choco cmd we have to install "hub" which acts as GitHub client for creating repository and so on.
+
+git config --global user.email "saladianilkumar23@gmail.com"
+git config --global user.name "anilkumar23"
+git remote set-url origin https://anilkumar23:Asaladi23@github.com/anilkumar23/sample-repo.git
+
+
+1. Generate an ssh key to add onto your github (ssh-keygen -t rsa -b 4096 -C "email@<YOUR MAIL ASSOCIATED WITH GIT>").
+
+2. cat ~/.ssh/id_rsa.pub (Copy the content).
+
+3. Add your ssh key onto your git hub account with below CMD:
+   curl -u anilkumar23:DREAMflo123 https://api.github.com/user/keys -d "{ \"title\": \"private-key\", \"key\": \"ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDDxjv6hDlH/t1e6Z8BDpobWLoukfy+hsrC9mqrIUzx4nrW63IKIBNYiQ0ywML4LP43x6K3v2C9moxO663rk1+3xxDLcqfcTMptDVU3sv8F9oIui4BxDdx67VhjAtq2XstrX60FZXj2AHGe3YVJOdlX7GLD5YtQIc4344ktkiQwcG2WEmJjb0VLyfXEzv8FS7PChKvpakkMvEn6xU44plx3NCE7mCBT8X4PoiFYyHIMlz6LXSD08Qmivu8UaOwCEgKqBBVpwpDMtXOF+AMybvym0BTSc+uAk7Ji1AzXUPnVORJ42amk2cZ9RtpRQ9W5SnPDiSdLXzERk+ygIOGJ9SjOE9e2LYuOfXiz6IwtQOvDILlp9VKh1D9uCPthCLyCVAYOAbanV0OhBMQK20mqJChIr94gmgMPLsiUEmatgureLiRd64hJKLpoCDHnRIUJreKF+IpPQ9SVkr1n0D357Qf/9edN+N9z4IoX4eKHFwxetnN98jTmxAnYRiy0nGpG2wCkR5dj8B/VewqugUjbW6lDN8OBgNS8bIz6gt7pav959C6Gwh6FkXA4NaJ+rc/FZqhtEQ1VWHH4r7XYUwjLyzpCXUZYhKg16g771yXUfZa5+zGwSgUDYkbNh/Qa8TQGJXFT/6+QFcUarpiYgdZspg2jpqCUEwVE8HohISrfYc59PQ== email@saladianilkumar23@gmail.com\"}".
+
+4. Install "hub" on your machine to create repositories from "git bash"/"CMD prompt". Follow this URL for installation - "https://github.com/github/hub".
+
+5. Create a new Repo using the following CMD - "hub create <YOUR REPO NAME>".
+
+6. You can check your github on browser for the repo u had created.
+
+7. Now its time to commit some files to your repo.
+	a. Open you GitBash/Terminal and move to the directory where your files are located that has to be pushed to your git repo.
+	b. "git init".
+	c. "git add ." ("." includes all files in the current directory). If you want to commit specific file use the following CMD "git add <UR SPCFIC FILE>".
+	d. git commit "<Your Commit Message>". (It will show you the changelist of your files).
+	e. git remote add origin https://github.com/<UR USERNAME>/<UR REPONAME>.git.
+	f. git push -u origin <master/any other branch>.
+
+-------------------------- Create a feature Branch out of Master ----------------
+
+8. git checkout -b <NEW BRANCH NAME>.
+
+9. git push origin <NEW BRANCH NAME> (8,9 - Create and switch to a new/Head branch from Master as Origin/Base branch).
+
+10. Make your Necessary changes, commit and push your changes to ur new/Head branch then Merge ur Head/Current branch to ur Master using below CMDs.
+	NOTE: Make sure your git bash have access to your editor (NotePad/Notepad++) by executing the following CMD "hub 	   pull-request". If u see this error "error using text editor for pull request message" then execute the 		  following CMD for editor permission - (git config --global core.editor "'C:/Program Files/Notepad++/			  notepad++.exe' -multiInst -notabbar -nosession -noPlugin").
+	a. git commit <File Names of Ur changes>
+	b. git push origin <NEW BRANCH NAME>
+	c. hub pull-request [-focp] [-b master] [-h <NEW BRANCH NAME>] [-r <REVIEWERS LIST WITH "," Seperated without spaces>]
+	d. git checkout master.
+	e. git merge --no-ff <NEW BRANCH NAME>
+	f. git push origin master
+
+11. Delete/Remove the last/latest commit.
+	a. git reset --hard HEAD^.
+	b. git push origin -f.
+12. Delete/Remove the last n commits.
+	a. git reset --hard HEAD~{2/3/4/5}.
+	b. git push origin -f.
+13. Delete/Remove with commit ID 
+	a. git log (will show only commit logs) / git reflog (will show all (commits and deleted commits) of ur log stash).
+	b. Choose your commitId which u want to delete.
+	c. git reset --hard <UR commit ID>.
+	d. git push origin -f.
+13. Undo the deleted commit 
+	a. "git reflog". (will show all (commits and deleted commits) of ur log stash).
+	b. Choose your commitId which u want to revert the deleted one.
+	c. git checkout/cherry-pick <Ur RevisionID need to be reset>.
+	d. git push -f origin.
+14. Tag ur releases - 
+	a. git tag -a <Release version ex - 1.0.0> -m "Comment ur version"
+ 	b. git push --tags
+ 	c. You can check your git hub repo with the created tag, there will be a ".zip" and ".gz" files created on the "releases" of your repo where all ur source code is bundled.
