@@ -1,0 +1,91 @@
+  Terraform Installation--------------------------------------------
+https://www.linuxnix.com/how-to-install-terraform-and-how-to-create-your-first-infrastructure-in-aws/
+
+wget https://releases.hashicorp.com/terraform/0.11.13/terraform_0.11.13_linux_amd64.zip
+
+unzip terraform_0.11.13_linux_amd64.zip
+
+mkdir $HOME/bin && cp ./terraform $HOME/bin/terraform && export PATH=$HOME/bin:$PATH
+
+kubectl installation----------------------------------------------------------------------------------
+
+curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.17.7/2020-07-08/bin/linux/amd64/kubectl
+curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.0/bin/linux/amd64/kubectl
+
+curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.17.7/2020-07-08/bin/linux/amd64/kubectl
+
+curl -o kubectl.sha256 https://amazon-eks.s3.us-west-2.amazonaws.com/1.17.7/2020-07-08/bin/linux/amd64/kubectl.sha256
+
+openssl sha1 -sha256 kubectl
+
+chmod +x ./kubectl
+
+mkdir $HOME/bin && cp ./kubectl $HOME/bin/kubectl && export PATH=$HOME/bin:$PATH
+
+sudo cp ./kubectl /usr/bin/kubectl && export PATH=/usr/bin:$PATH
+
+echo 'export PATH=$HOME/bin:$PATH' >> ~/.bashrc
+
+kubectl version --short --client	
+
+IAM Authenticator installation-------------------------------------------------------------------------
+curl -o aws-iam-authenticator https://amazon-eks.s3-us-west-2.amazonaws.com/1.12.7/2019-03-27/bin/linux/amd64/aws-iam-authenticator
+
+curl -o aws-iam-authenticator.sha256 https://amazon-eks.s3-us-west-2.amazonaws.com/1.12.7/2019-03-27/bin/linux/amd64/aws-iam-authenticator.sha256
+
+openssl sha1 -sha256 aws-iam-authenticator
+
+chmod +x ./aws-iam-authenticator
+
+cp ./aws-iam-authenticator $HOME/bin/aws-iam-authenticator && export PATH=$HOME/bin:$PATH
+
+echo 'export PATH=$HOME/bin:$PATH' >> ~/.bashrc
+
+aws-iam-authenticator help
+
+--------------------------------------------------------------------------------------------------------
+Install git and java(if not available)
+
+sudo yum install -y git
+sudo yum install java
+
+Configure AWS on machine with your AWS Access Key and Secret Access key
+
+CMD: aws configure (It will ask access Key, secret access ID, region and finally output format(leave empty))
+--------------------------------------------------------------------------------------------------------
+
+terraform working eks--------------------------------------------------------------
+https://github.com/christopherhein/terraform-eks
+
+git clone https://github.com/anilkumar23/terraform-eks.git
+		
+terraform init
+
+terraform plan -lock=false
+
+terraform apply -lock=false		
+
+eks cluster status-----------------------------------------------
+
+terraform output kubeconfig > kubeconfig
+
+export KUBECONFIG=kubeconfig
+
+terraform output config-map-aws-auth > aws-auth.yaml
+
+aws eks --region us-east-1 describe-cluster --name terraform-eks --query cluster.status
+
+update kubeconfig file--------------------
+aws eks --region us-east-1 update-kubeconfig --name terraform-eks-demo
+ 	
+kubectl get all
+
+kubectl apply -f aws-auth.yaml
+
+kubectl get nodes --watch
+
+Note: ----------------------------------------------------------
+
+While running jenkins job if you get an error at 
+
+sh 'aws eks --region us-east-1 update-kubeconfig --name terraform-eks'

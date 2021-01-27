@@ -1,0 +1,108 @@
+docker images - Fetch images list
+docker ps 	  - Fetch container list only status up (running)
+docker ps -a  -	Fetch container list ALL (running & Exited/Terminated)
+docker rmi <image-name>  - removes images
+docker rm <container-name> - removes container
+docker rmi -f <image-name>  - removes images forcefully
+docker rm -f <container-name> -removes container forcefully
+docker exec -it <container-name> bash - Enter into container.
+
+
+
+Ubuntu--
+sudo apt-get install docker.io
+sudo systemctl start docker
+sudo systemctl status docker
+
+Linux---
+sudo yum install -y docker
+sudo systemctl start docker
+sudo setfacl -m user:ec2-user:rw /var/run/docker.sock
+
+
+
+
+Containerize Spring Boot Application along with MySQL DB
+
+Note:In this tutorial they've used 8080 port. Make sure the port is free, else feel free to change the port whereever necessary.
+
+https://springbootdev.com/2017/11/30/docker-spring-boot-and-spring-data-jpa-mysql-rest-api-example-with-docker-without-docker-compose/
+
+docker run -d -p 2052:3306 --name mysql-docker-container -e MYSQL_ROOT_PASSWORD=Password@123 -e MYSQL_DATABASE=spring_app_db -e MYSQL_USER=app_user -e MYSQL_PASSWORD=test1234 mysql:latest
+
+mvn clean install -DskipTests
+
+docker build -f Dockerfile -t spring-jpa .
+
+docker run -t --name spring-jpa-container --link mysql-docker-container:mysql -p 8087:8085 spring-jpa
+docker run -t --name spring-jpa-container --link mysql-docker-container:mysql -p 8087:8085 bank-service
+docker run -t --name spring-jpa-container -p 8087:8085 bank-service
+
+
+docker run -t --name eureka-container -p 8761:8761 eureka-server
+docker run -t --name zuul-container --link eureka-container:eureka-server -p 8762:8762 zuul-service
+docker run -t --name bank-container --link mysql-docker-container:mysql -p 8085:8085 bank-service
+docker run -t --name branch-container --link mysql-docker-container:mysql -p 8086:8086 branch-service
+docker run -t --name customer-container --link mysql-docker-container:mysql -p 8087:8087 customer-service
+docker run -t --name transaction-container --link mysql-docker-container:mysql -p 8088:8088 transaction-service
+docker run -t --name account-container --link mysql-docker-container:mysql -p 8089:8089 account-service
+
+
+
+docker-compose run --publish 8080:80 -p 2022:22 -p 127.0.0.1:2021:21 web python manage.py shell
+
+******************************************************************************************************************************************
+
+https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+
+
+
+
+kubectl create -f https://raw.githubusercontent.com/kubernetes/dashboard/v1.10.1/src/deploy/alternative/kubernetes-dashboard.yaml
+
+kubectl proxy
+
+http://localhost:8001/api/v1/namespaces/kube-system/services/kubernetes-dashboard/proxy
+
+
+Push image to the docker hub:
+docker login =================>  docker login --username=anil9848 --password=Password@12345
+docker tag spring-jpa anil1234/spring-jpa  ==> docker tag <app-name> dockerUserName/<app-name>
+docker push anil1234/spring-jpa
+
+docker push anil9848/micro-services:acc-service
+
+
+kubectl run spring-jpa --image=spring-jpa/spring-jpa:latest --port=8087 deployment "spring-jpa" created
+kubectl run spring-jpa-app --image=gcr.io/spring-jpa-app:latest --port=8080 deployment "spring-jpa" created
+
+
+create 
+kubectl create secret docker-registry regcred --docker-server=https://index.docker.io/v1/ --docker-username=anil --docker-password=Password@123 --docker-email=saladianilkumar23@gmail.com
+
+kubectl create secret docker-registry regcred1 --docker-server=https://index.docker.io/v1/ --docker-username=anil --docker-password=Password@123 --docker-email=anilkumar@rype.in
+
+kubectl get secret regcred --output=yaml
+
+kubectl create deployment spring-jpa-kube --image=gcr.io/spring-jpa/spring-jpa
+
+docker exec -it spring-jpa-app-container bash ==> to get into container and configure things..
+
+\
+UPDATE mysql.user SET Super_Priv='Y' WHERE user='app_user' AND host='%';
+FLUSH PRIVILEGES;
+
+
+
+----------------Docker SpringBoot Mysql JPA ---------------------------------
+
+https://github.com/box/mojito/blob/master/docker/docker-compose.yml
+
+-----------------------------------------------------------------------------
+,
+	  "spring.datasource.driverClassName" : "com.mysql.jdbc.Driver"
+      "spring.application.name" : "account-service",
+      "eureka.instance.preferIpAddress" : "true",
+      "eureka.client.registerWithEureka" : "false",
+      "eureka.client.fetchRegistry" : "false",
+      "eureka.client.serviceUrl.defaultZone" : "http://eureka-server:8761/eureka/"

@@ -1,0 +1,56 @@
+install jenkins, docker on ubuntu -AWS: 
+
+https://www.digitalocean.com/community/tutorials/how-to-install-jenkins-on-ubuntu-18-04
+
+sudo apt update
+sudo apt install openjdk-8-jdk
+wget -q -O - https://pkg.jenkins.io/debian/jenkins.io.key | sudo apt-key add -
+sudo sh -c 'echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'
+sudo apt update
+sudo apt install jenkins
+sudo systemctl start jenkins
+sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+
+sudo apt-get install docker.io
+sudo systemctl start docker
+sudo systemctl status docker
+sudo usermod -aG docker jenkins
+sudo docker login
+username:
+password:
+login succeded
+sudo service jenkins restart
+====================================================================================
+If it cannot push inage with authentication error provide full permissions to jenkins slave by:
+sudo vi /etc/sudoers  ========> jenkins ALL=(ALL) NOPASSWD: ALL ==============>(place this cmd in last and save the file and restart your jenkins)
+
+If declaration tool stage fails for pulling JDK with Oracle login issue  then provide your java directory of your slave machine directly instead of install automatically (ex - /usr/lib/jvm/java-8-openjdk-amd64)
+
+If it fails to login to docker hub on push image step then add a step in the push images stage
+sh 'sudo docker login https://index.docker.io/v1/ -u=anil9848 -p=Password@12345'
+=====================================================================================
+
+
+
+
+
+
+
+
+https://severalnines.com/blog/using-kubernetes-deploy-postgresql
+
+aws eks create-cluster --name prod --role-arn arn:aws:iam::012345678910:role/eks-service-role-AWSServiceRoleForAmazonEKS-J7ONKE3BQ4PI --resources-vpc-config subnetIds=subnet-6782e71e,subnet-e7e761ac,securityGroupIds=sg-6979fe18
+ kops create cluster --node-count=2 --node-size=t2.medium --zones=us-east-1a --name=kube-cluster
+
+
+ 
+sh 'sudo docker tag account-app anil9848/account-app:latest'
+
+# kubectl delete service postgres 
+# kubectl delete deployment postgres
+# kubectl delete configmap postgres-config
+# kubectl delete persistentvolumeclaim postgres-pv-claim
+# kubectl delete persistentvolume postgres-pv-volume
+
+
+https://www.youtube.com/watch?v=xzCgeRxSzy4

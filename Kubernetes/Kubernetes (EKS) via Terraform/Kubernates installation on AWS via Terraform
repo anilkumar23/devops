@@ -1,0 +1,211 @@
+  Terraform Installation--------------------------------------------
+https://www.linuxnix.com/how-to-install-terraform-and-how-to-create-your-first-infrastructure-in-aws/
+
+wget https://releases.hashicorp.com/terraform/0.11.13/terraform_0.11.13_linux_amd64.zip
+
+unzip terraform_0.11.13_linux_amd64.zip
+
+mkdir $HOME/bin && cp ./terraform $HOME/bin/terraform && export PATH=$HOME/bin:$PATH
+
+kubectl installation----------------------------------------------------------------------------------
+
+curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.17.7/2020-07-08/bin/linux/amd64/kubectl
+curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.0/bin/linux/amd64/kubectl
+
+curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.17.7/2020-07-08/bin/linux/amd64/kubectl
+
+curl -o kubectl.sha256 https://amazon-eks.s3.us-west-2.amazonaws.com/1.17.7/2020-07-08/bin/linux/amd64/kubectl.sha256
+
+openssl sha1 -sha256 kubectl
+
+chmod +x ./kubectl
+
+mkdir $HOME/bin && cp ./kubectl $HOME/bin/kubectl && export PATH=$HOME/bin:$PATH
+
+sudo cp ./kubectl /usr/bin/kubectl && export PATH=/usr/bin:$PATH
+
+echo 'export PATH=$HOME/bin:$PATH' >> ~/.bashrc
+
+kubectl version --short --client	
+
+IAM Authenticator installation-------------------------------------------------------------------------
+curl -o aws-iam-authenticator https://amazon-eks.s3-us-west-2.amazonaws.com/1.12.7/2019-03-27/bin/linux/amd64/aws-iam-authenticator
+
+curl -o aws-iam-authenticator.sha256 https://amazon-eks.s3-us-west-2.amazonaws.com/1.12.7/2019-03-27/bin/linux/amd64/aws-iam-authenticator.sha256
+
+openssl sha1 -sha256 aws-iam-authenticator
+
+chmod +x ./aws-iam-authenticator
+
+cp ./aws-iam-authenticator $HOME/bin/aws-iam-authenticator && export PATH=$HOME/bin:$PATH
+
+echo 'export PATH=$HOME/bin:$PATH' >> ~/.bashrc
+
+aws-iam-authenticator help
+
+--------------------------------------------------------------------------------------------------------
+Install git and java(if not available)
+
+sudo yum install -y git
+sudo yum install java
+
+Configure AWS on machine with your AWS Access Key and Secret Access key
+
+CMD: aws configure (It will ask access Key, secret access ID, region and finally output format(leave empty))
+--------------------------------------------------------------------------------------------------------
+
+terraform working eks--------------------------------------------------------------
+https://github.com/christopherhein/terraform-eks
+
+git clone https://github.com/anilkumar23/terraform-eks.git
+		
+terraform init
+
+terraform plan -lock=false
+
+terraform apply -lock=false		
+
+eks cluster status-----------------------------------------------
+
+terraform output kubeconfig > kubeconfig
+
+export KUBECONFIG=kubeconfig
+
+terraform output config-map-aws-auth > aws-auth.yaml
+
+aws eks --region us-east-1 describe-cluster --name terraform-eks --query cluster.status
+
+update kubeconfig file--------------------
+aws eks --region us-east-1 update-kubeconfig --name terraform-eks-demo
+ 	
+kubectl get all
+
+kubectl apply -f aws-auth.yaml
+
+kubectl get nodes --watch
+
+Note: ----------------------------------------------------------
+
+While running jenkins job if you get an error at 
+
+sh 'aws eks --region us-east-1 update-kubeconfig --name terraform-eks'
+
+----------------------------------------END-----------------------------------------------------------------------------------------------
+
+
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v1.10.1/src/deploy/alternative/kubernetes-dashboard.yaml
+
+http://localhost:8001/api/v1/namespaces/kube-system/services/kubernetes-dashboard:/proxy/.
+
+Nginx-Ingress Controller------------------------------------------------
+https://aws.amazon.com/blogs/opensource/kubernetes-ingress-aws-alb-ingress-controller/
+
+
+Example for EKS Ingress------------------------------------
+https://github.com/pahud/eks-alb-ingress
+
+
+
+
+
+
+sudo setfacl -m user:ec2-user:rw /var/run/docker.sock
+
+
+
+
+-----------------------------------------    Docker-Compose   ------------------------------------------------------------------
+
+sudo yum update
+sudo yum install -y docker
+sudo systemctl start docker
+sudo setfacl -m user:ec2-user:rw /var/run/docker.sock
+sudo curl -L https://github.com/docker/compose/releases/download/1.20.0/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+sudo chkconfig docker on
+sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+
+
+
+sudo chmod +x /usr/local/bin/docker-compose
+After you do the curl command , it'll put docker-compose into the /usr/local/bin
+
+which is not on the PATH To fix it, create a symbolic link:
+ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+
+
+-------------------------------------	Instal jenkins on linuxize	--------------------------------------------------
+
+https://linuxize.com/post/how-to-install-jenkins-on-centos-7/
+
+-------------------------------	   WithOut jenkins   ---------------------------------------------     
+sudo yum -y update
+sudo yum install -y java
+sudo yum install -y docker
+sudo systemctl start docker
+sudo setfacl -m user:ec2-user:rw /var/run/docker.sock
+
+---------------------------------------------------------------------------------------------------
+
+
+--------------------------------------     With jenkins   -------------------------------------------
+/usr/lib/jvm/java-openjdk
+
+sudo yum -y update
+sudo yum install -y java
+sudo yum install -y maven
+udo yum install -y git
+curl --silent --location http://pkg.jenkins-ci.org/redhat-stable/jenkins.repo | sudo tee /etc/yum.repos.d/jenkins.repo
+sudo rpm --import https://pkg.jenkins.io/redhat/jenkins.io.key
+sudo yum install -y jenkins
+sudo systemctl start jenkins
+systemctl status jenkins
+sudo systemctl enable jenkins
+sudo service jenkins restart
+
+sudo yum install -y docker
+sudo systemctl start docker
+sudo setfacl -m user:ec2-user:rw /var/run/docker.sock
+sudo curl -L https://github.com/docker/compose/releases/download/1.20.0/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+sudo usermod -aG docker jenkins
+sudo vi /etc/sudoers  ========> jenkins ALL=(ALL) NOPASSWD: ALL
+sudo usermod -a -G root jenkins
+sudo service jenkins restart
+
+sudo yum install -y docker
+sudo systemctl start docker
+sudo setfacl -m user:ec2-user:rw /var/run/docker.sock
+sudo usermod -aG docker jenkins
+sudo usermod -a -G root jenkins
+sudo systemctl restart jenkins
+
+
+aws ecr get-login --region us-east-1 --no-include-email
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 349229500297.dkr.ecr.us-east-1.amazonaws.com
+
+
+Note: If you have memory issues, allocate some  memory for jenkins to run specific jobs. Follow below instructions -  
+
+free -m
+Just add some. Try with 1 GB for begin.
+
+sudo fallocate -l 1G /swapfile (Can replace 1G with 2G, 3G.... based on your system HD size)
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+
+Check again:
+free -m
+--------------------------------------------------------------------------------------------------------
+
+
+
+/usr/lib/jvm/java-1.8.0-openjdk
+/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.252.b09-2.amzn2.0.1.x86_64
+/usr/lib/jvm/java-openjdk
+/usr/lib/jvm/jre-1.8.0-openjdk
+
+
+

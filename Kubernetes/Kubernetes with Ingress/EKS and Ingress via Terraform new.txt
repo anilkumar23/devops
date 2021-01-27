@@ -1,0 +1,151 @@
+URL: https://github.com/wardviaene/terraform-course/tree/master/eks-demo
+--------------------------------------------------------------------------------------------------------
+Download terraform (Terraform 0.12 version):
+
+wget https://releases.hashicorp.com/terraform/0.12.17/terraform_0.12.17_linux_amd64.zip
+unzip terraform_0.12.17_linux_amd64.zip
+mkdir $HOME/bin && cp ./terraform $HOME/bin/terraform && export PATH=$HOME/bin:$PATH
+sudo cp ./terraform /usr/bin/terraform && export PATH=/usr/bin:$PATH
+--------------------------------------------------------------------------------------------------------
+kubectl installation:
+
+curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.17.7/2020-07-08/bin/linux/amd64/kubectl
+curl -o kubectl.sha256 https://amazon-eks.s3.us-west-2.amazonaws.com/1.17.7/2020-07-08/bin/linux/amd64/kubectl.sha256
+openssl sha1 -sha256 kubectl
+chmod +x ./kubectl
+cp ./kubectl $HOME/bin/kubectl && export PATH=$HOME/bin:$PATH
+sudo cp ./kubectl /usr/bin/kubectl && export PATH=/usr/bin:$PATH
+kubectl version --short --client  
+
+--------------------------------------------------------------------------------------------------------
+heptio iam-authencator installation:
+
+wget https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/v0.3.0/heptio-authenticator-aws_0.3.0_linux_amd64
+chmod +x heptio-authenticator-aws_0.3.0_linux_amd64
+sudo mv heptio-authenticator-aws_0.3.0_linux_amd64 /usr/local/bin/heptio-authenticator-aws
+--------------------------------------------------------------------------------------------------------
+Configure AWS:
+
+aws configure - (provide your AccessKey and Secret AcceessID)
+--------------------------------------------------------------------------------------------------------
+Terraform Scripts Execution:
+
+git clone https://github.com/anilkumar23/terraform-new.git
+cd terraform-new
+terraform init
+terraform plan
+terraform apply
+--------------------------------------------------------------------------------------------------------
+eks cluster status
+
+terraform output kubeconfig > kubeconfig
+export KUBECONFIG=kubeconfig
+terraform output config-map-aws-auth > aws-auth.yaml
+aws eks --region us-east-1 describe-cluster --name terraform-eks-demo --query cluster.status
+--------------------------------------------------------------------------------------------------------
+update kubeconfig file
+
+aws eks --region us-east-1 update-kubeconfig --name terraform-eks-demo
+kubectl get all
+kubectl apply -f aws-auth.yaml
+kubectl get nodes --watch
+--------------------------------------------------------------------------------------------------------
+Download ingress-controller and rbac files:
+
+wget https://raw.githubusercontent.com/kubernetes-sigs/aws-alb-ingress-controller/v1.0.1/docs/examples/alb-ingress-controller.yaml
+wget https://raw.githubusercontent.com/kubernetes-sigs/aws-alb-ingress-controller/v1.0.1/docs/examples/rbac-role.yaml
+--------------------------------------------------------------------------------------------------------
+Update cluster-name with the EKS cluster name in alb-ingress-controller.yaml
+
+vi alb-ingress-controller.yaml (edit --cluster-name=terraform-eks-demo)
+--------------------------------------------------------------------------------------------------------
+Create an IAM policy and manually update the EKS subnets for auto discovery.
+
+Attach the given policy to the workernode IAM role:
+https://raw.githubusercontent.com/kubernetes-sigs/aws-alb-ingress-controller/v1.0.0/docs/examples/iam-policy.json
+
+Open Subnets section, edit the tags of the subnets and add the below tags for all subnets
+kubernetes.io/role/elb : ''
+kubernetes.io/role/internal-elb : ''
+--------------------------------------------------------------------------------------------------------
+
+Now Deploy the rbac-role.yaml and alb-ingress-controller.yaml
+kubectl apply -f rbac-role.yaml
+kubectl apply -f alb-ingress-controller.yaml
+
+kubectl logs -n kube-system $(kubectl get po -n kube-system | egrep -o alb-ingress[a-zA-Z0-9-]+)
+
+It should able see the below logs:
+
+{
+-------------------------------------------------------------------------------
+AWS ALB Ingress controller
+  Release:    v1.0.0
+  Build:      git-c25bc6c5
+  Repository: https://github.com/kubernetes-sigs/aws-alb-ingress-controller
+-------------------------------------------------------------------------------
+
+W0721 07:39:08.717216s       1 client_config.go:552] Neither --kubeconfig nor --master was specified.  Using the inClusterConfig.  This might not work.
+I0721 07:39:08.790305       1 :0] kubebuilder/controller "level"=0 "msg"="Starting EventSource"  "Controller"="alb-ingress-controller" "Source"={"Type":{"metadata":{"creationTimestamp":null},"spec":{},"status":{"loadBalancer":{}}}}
+I0721 07:39:08.790594       1 :0] kubebuilder/controller "level"=0 "msg"="Starting EventSource"  "Controller"="alb-ingress-controller" "Source"={"Type":{"metadata":{"creationTimestamp":null},"spec":{},"status":{"loadBalancer":{}}}}
+I0721 07:39:08.790757       1 :0] kubebuilder/controller "level"=0 "msg"="Starting EventSource"  "Controller"="alb-ingress-controller" "Source"={"Type":{"metadata":{"creationTimestamp":null}}}
+I0721 07:39:08.791002       1 :0] kubebuilder/controller "level"=0 "msg"="Starting EventSource"  "Controller"="alb-ingress-controller" "Source"={"Type":{"metadata":{"creationTimestamp":null},"spec":{},"status":{"daemonEndpoints":{"kubeletEndpoint":{"Port":0}},"nodeInfo":{"machineID":"","systemUUID":"","bootID":"","kernelVersion":"","osImage":"","containerRuntimeVersion":"","kubeletVersion":"","kubeProxyVersion":"","operatingSystem":"","architecture":""}}}}
+I0721 07:39:08.791285       1 leaderelection.go:185] attempting to acquire leader lease  kube-system/ingress-controller-leader-alb...
+I0721 07:39:08.800551       1 leaderelection.go:194] successfully acquired lease kube-system/ingress-controller-leader-alb
+I0721 07:39:08.900921       1 :0] kubebuilder/controller "level"=0 "msg"="Starting Controller"  "Controller"="alb-ingress-controller"
+I0721 07:39:09.001096       1 :0] kubebuilder/controller "level"=0 "msg"="Starting workers"  "Controller"="alb-ingress-controller" "WorkerCount"=1
+}
+
+--------------------------------------------------------------------------------------------------------
+Create Ingress-Service file as ingress.yaml and copy the below txt:
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: "test-ingress"
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+  labels:
+    app: test-ingress
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /employee/*
+            backend:
+              serviceName: "employee-service"
+              servicePort: 8082
+          - path: /address/*
+            backend:
+              serviceName: "address-service"
+              servicePort: 8083
+
+Note: different services can be configured to this file by appending path to the spec.rules 
+--------------------------------------------------------------------------------------------------------
+Deploy Ingress file:
+
+Before executing the above ingress file make sure u have deployed deployment.yaml and service.yaml files of both address and employee services.
+Here are the git repo's: 
+1. https://github.com/anilkumar23/address-service.git 
+2. https://github.com/anilkumar23/employee-service.git
+
+kubectl apply -f <ingress file Name>.yaml
+
+kubectl get ingress  (you should see something like below)
+NAME           HOSTS   ADDRESS                                                                 PORTS   AGE
+test-ingress   *       b5b41197-default-testingre-5bb0-378124631.us-west-2.elb.amazonaws.com   80      37m
+--------------------------------------------------------------------------------------------------------
+
+After few min hit the Address/path-name you can see the service data. 
+
+------------------------------------------- --END ---------------------------------------------------------
+
+kubectl describe pod -l app=customer-service | grep Node
+kubectl describe pod -l app=bank-service | grep Node
+
+
+
+D:\workspace\grafana-6.5.2.windows-amd64\grafana-6.5.2\bin>grafana-server.exe
+
+
